@@ -19,8 +19,14 @@ builder.Services.AddScoped<IUrlService, UrlService>();
 // CORS for frontend
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
-        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+    options.AddPolicy("AllowNetlify", policy =>
+        policy
+            .WithOrigins(
+                "https://urll.netlify.app",
+                "http://localhost:3000",
+                "http://localhost:5000")
+            .AllowAnyMethod()
+            .AllowAnyHeader());
 });
 
 var app = builder.Build();
@@ -38,7 +44,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowAll");
+app.UseCors("AllowNetlify");
 app.UseStaticFiles();
 
 // Redirect short URLs — this must come BEFORE MapControllers
