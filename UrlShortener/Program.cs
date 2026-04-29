@@ -22,7 +22,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowNetlify", policy =>
         policy
             .WithOrigins(
-                "https://urll.netlify.app",
+                "https://snipurll.netlify.app",
                 "http://localhost:3000",
                 "http://localhost:5000")
             .AllowAnyMethod()
