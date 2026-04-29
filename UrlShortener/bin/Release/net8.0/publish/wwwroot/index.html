@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Snip — URL Shortener</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --border: #1e1e2e;
+      --accent: #7c3aed;
+      --accent-glow: rgba(124,58,237,0.3);
+      --accent2: #06b6d4;
+      --text: #e4e4f0;
+      --muted: #6b6b8a;
+      --success: #10b981;
+      --danger: #ef4444;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Syne', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Glow orbs */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -20%;
+      left: -10%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 60px 24px 100px;
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 56px;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .logo-icon {
+      width: 38px;
+      height: 38px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+    }
+
+    .tagline {
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-family: var(--mono);
+      margin-top: 4px;
+    }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 24px;
+      animation: fadeUp 0.6s ease both;
+      animation-delay: 0.1s;
+    }
+
+    .card-title {
+      font-size: 0.75rem;
+      font-family: var(--mono);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+    }
+
+    /* Input group */
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    input[type="text"], input[type="number"] {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.875rem;
+      padding: 12px 16px;
+      border-radius: 10px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input[type="text"]:focus, input[type="number"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    input[type="text"] { flex: 1; }
+    input[type="number"] { width: 130px; }
+
+    input::placeholder { color: var(--muted); }
+
+    .btn {
+      padding: 12px 22px;
+      border-radius: 10px;
+      font-family: var(--sans);
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .btn-primary:hover {
+      background: #6d28d9;
+      transform: translateY(-1px);
+      box-shadow: 0 0 30px var(--accent-glow);
+    }
+
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { color: var(--danger); border-color: var(--danger); }
+
+    .hint {
+      margin-top: 10px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    /* Alert */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      margin-bottom: 16px;
+      display: none;
+      animation: fadeUp 0.3s ease;
+    }
+    .alert.show { display: block; }
+    .alert-success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: var(--success); }
+    .alert-error   { background: rgba(239,68,68,0.1);  border: 1px solid rgba(239,68,68,0.3);  color: var(--danger);  }
+
+    /* Result box */
+    .result-box {
+      display: none;
+      margin-top: 16px;
+      background: var(--bg);
+      border: 1px solid var(--accent);
+      border-radius: 10px;
+      padding: 14px 16px;
+      animation: fadeUp 0.3s ease;
+    }
+    .result-box.show { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+    .result-url {
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      color: var(--accent2);
+      word-break: break-all;
+    }
+
+    .copy-btn {
+      background: rgba(124,58,237,0.15);
+      color: var(--accent);
+      border: 1px solid rgba(124,58,237,0.3);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .copy-btn:hover { background: rgba(124,58,237,0.3); }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+    }
+
+    thead tr {
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      padding: 0 12px 12px;
+      text-align: left;
+      font-weight: 500;
+    }
+
+    td {
+      padding: 14px 12px;
+      border-bottom: 1px solid rgba(30,30,46,0.6);
+      vertical-align: middle;
+    }
+
+    tbody tr { transition: background 0.15s; }
+    tbody tr:hover { background: rgba(124,58,237,0.04); }
+
+    .td-short a {
+      font-family: var(--mono);
+      color: var(--accent2);
+      text-decoration: none;
+      font-size: 0.85rem;
+    }
+    .td-short a:hover { text-decoration: underline; }
+
+    .td-original {
+      max-width: 240px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(6,182,212,0.1);
+      color: var(--accent2);
+      border: 1px solid rgba(6,182,212,0.2);
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 0;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.85rem;
+    }
+
+    .empty-state .icon { font-size: 2rem; margin-bottom: 10px; }
+
+    /* Loader */
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">✂️</div>
+      <h1>Snip</h1>
+    </div>
+    <p class="tagline">// fast url shortener · built with c# + asp.net core</p>
+  </header>
+
+  <!-- Shorten form -->
+  <div class="card">
+    <div class="card-title">// shorten a url</div>
+
+    <div id="alert" class="alert"></div>
+
+    <div class="input-row">
+      <input type="text" id="urlInput" placeholder="https://your-long-url.com/goes/here" />
+      <input type="number" id="expiryInput" placeholder="Expires (days)" min="1" max="365" />
+      <button class="btn btn-primary" onclick="shorten()">
+        <span id="btnText">Snip it →</span>
+      </button>
+    </div>
+    <p class="hint">Leave expiry blank for permanent links.</p>
+
+    <div id="resultBox" class="result-box">
+      <span id="resultUrl" class="result-url"></span>
+      <button class="copy-btn" onclick="copyUrl()">copy</button>
+    </div>
+  </div>
+
+  <!-- All URLs -->
+  <div class="card" style="animation-delay:0.2s">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+      <div class="card-title" style="margin:0">// all links</div>
+      <button class="btn btn-ghost" style="font-size:0.75rem; padding:6px 14px" onclick="loadUrls()">↺ refresh</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Short URL</th>
+            <th>Original</th>
+            <th>Clicks</th>
+            <th>Created</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="urlTable">
+          <tr><td colspan="5"><div class="empty-state"><div class="icon">🔗</div>No links yet. Snip one above!</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const API = '/api/urls';
+  let lastShortUrl = '';
+
+  async function shorten() {
+    const url = document.getElementById('urlInput').value.trim();
+    const days = document.getElementById('expiryInput').value;
+
+    if (!url) return showAlert('Please enter a URL.', 'error');
+
+    setBtnLoading(true);
+    hideAlert();
+
+    try {
+      const res = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ originalUrl: url, expiresInDays: days ? parseInt(days) : null })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) return showAlert(data.error || 'Something went wrong.', 'error');
+
+      lastShortUrl = data.shortUrl;
+      document.getElementById('resultUrl').textContent = data.shortUrl;
+      document.getElementById('resultBox').classList.add('show');
+      showAlert('✓ URL shortened successfully!', 'success');
+      document.getElementById('urlInput').value = '';
+      document.getElementById('expiryInput').value = '';
+      loadUrls();
+    } catch (e) {
+      showAlert('Could not connect to server.', 'error');
+    } finally {
+      setBtnLoading(false);
+    }
+  }
+
+  async function loadUrls() {
+    try {
+      const res = await fetch(API);
+      const urls = await res.json();
+      renderTable(urls);
+    } catch {
+      // silently fail on refresh
+    }
+  }
+
+  async function deleteUrl(code) {
+    if (!confirm('Delete this short URL?')) return;
+    await fetch(`${API}/${code}`, { method: 'DELETE' });
+    loadUrls();
+  }
+
+  function renderTable(urls) {
+    const tbody = document.getElementById('urlTable');
+
+    if (!urls || urls.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="icon">🔗</div>No links yet. Snip one above!</div></td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = urls.map(u => `
+      <tr>
+        <td class="td-short"><a href="${u.shortUrl}" target="_blank">${u.shortUrl.replace(location.origin,'')}</a></td>
+        <td class="td-original" title="${u.originalUrl}">${u.originalUrl}</td>
+        <td><span class="badge">▲ ${u.clicks}</span></td>
+        <td style="color:var(--muted);font-family:var(--mono);font-size:0.75rem">${fmtDate(u.createdAt)}</td>
+        <td><button class="btn btn-ghost" style="font-size:0.72rem;padding:5px 12px" onclick="deleteUrl('${u.code}')">delete</button></td>
+      </tr>
+    `).join('');
+  }
+
+  function copyUrl() {
+    navigator.clipboard.writeText(lastShortUrl);
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = 'copied!';
+    setTimeout(() => btn.textContent = 'copy', 2000);
+  }
+
+  function showAlert(msg, type) {
+    const el = document.getElementById('alert');
+    el.textContent = msg;
+    el.className = `alert alert-${type} show`;
+    setTimeout(() => el.classList.remove('show'), 4000);
+  }
+
+  function hideAlert() {
+    document.getElementById('alert').classList.remove('show');
+  }
+
+  function setBtnLoading(loading) {
+    document.getElementById('btnText').innerHTML = loading
+      ? '<span class="spinner"></span>'
+      : 'Snip it →';
+  }
+
+  function fmtDate(iso) {
+    return new Date(iso).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  }
+
+  // Initial load
+  loadUrls();
+
+  // Shorten on Enter
+  document.getElementById('urlInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') shorten();
+  });
+</script>
+</body>
+</html>

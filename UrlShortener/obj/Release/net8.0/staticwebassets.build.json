@@ -1,0 +1,39 @@
+{
+  "Version": 1,
+  "Hash": "9bO2DiDjEwM8AAGfZ8jRubkPE+nQuw5Hi5O7zdhwVhA=",
+  "Source": "UrlShortener",
+  "BasePath": "_content/UrlShortener",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "UrlShortener\\wwwroot",
+      "Source": "UrlShortener",
+      "ContentRoot": "C:\\Users\\ACER\\OneDrive\\Desktop\\shortener\\UrlShortener\\wwwroot\\",
+      "BasePath": "_content/UrlShortener",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "C:\\Users\\ACER\\OneDrive\\Desktop\\shortener\\UrlShortener\\wwwroot\\index.html",
+      "SourceId": "UrlShortener",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\ACER\\OneDrive\\Desktop\\shortener\\UrlShortener\\wwwroot\\",
+      "BasePath": "_content/UrlShortener",
+      "RelativePath": "index.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\index.html"
+    }
+  ]
+}
